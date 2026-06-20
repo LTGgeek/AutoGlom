@@ -85,27 +85,6 @@ def process_slices(image_data, output_folder, file_name, slice_axis, scaling_met
         if (slice_idx + 1) % 10 == 0 or (slice_idx + 1) == num_slices:
             print(f"Processed {slice_idx + 1}/{num_slices} slices for {subfolder_name}.")
 
-def process_image_slices(image_data, output_folder, file_name, slice_axis, scaling_methods,
-                         apply_thresh, threshold, sigmoid_alpha, img_name_prefix):
-    """
-    Process and save slices for the full image.
-    """
-    # global_mean, global_std, _, _ = compute_global_statistics(image_data, slice_axis)
-    # process_slices(
-    #     image_data=image_data,
-    #     output_folder=output_folder,
-    #     file_name=file_name,
-    #     slice_axis=slice_axis,
-    #     scaling_methods=scaling_methods,
-    #     apply_thresh=apply_thresh,
-    #     threshold=threshold,
-    #     sigmoid_alpha=sigmoid_alpha,
-    #     subfolder_name='full_image',
-    #     global_mean=global_mean,
-    #     global_std=global_std,
-    #     img_name_prefix= img_name_prefix
-    # )
-
 def process_masked_cropped_image(image_data_cropped, annotation_data_cropped, output_folder,
                                file_name, slice_axis, scaling_methods, apply_thresh,
                                threshold, sigmoid_alpha, img_name_prefix):
@@ -152,20 +131,6 @@ def process_masked_cropped_image(image_data_cropped, annotation_data_cropped, ou
             output_path = os.path.join(output_folder, 'masked_cropped', 'white_mask',
                                      method, f"{img_name_prefix}{slice_idx:04d}.png")
             save_png(white_masked, output_path)
-
-            # # Apply thresholding if requested
-            # if apply_thresh:
-            #     # Black mask with threshold
-            #     thresholded_black = apply_threshold(black_masked, lower_bound=threshold)
-            #     output_path = os.path.join(output_folder, 'masked_cropped', 'black_mask',
-            #                              method, 'thresholded', f"{img_name_prefix}{slice_idx:04d}.png")
-            #     save_png(thresholded_black, output_path)
-
-            #     # White mask with threshold
-            #     thresholded_white = apply_threshold(white_masked, lower_bound=threshold)
-            #     output_path = os.path.join(output_folder, 'masked_cropped', 'white_mask',
-            #                              method, 'thresholded', f"{img_name_prefix}{slice_idx:04d}.png")
-            #     save_png(thresholded_white, output_path)
 
         if (slice_idx + 1) % 10 == 0 or (slice_idx + 1) == num_slices:
             print(f"Processed {slice_idx + 1}/{num_slices} masked slices.")
@@ -293,10 +258,6 @@ def convert_nrrd_to_png(image_file, annotation_file1, annotation_file2, bdot_fil
 
     file_name = os.path.splitext(os.path.basename(image_file))[0]
     create_output_dirs(output_folder, scaling_methods, apply_thresh)
-
-    # print("\nProcessing full image...")
-    # process_image_slices(image_data, output_folder, file_name, slice_axis, scaling_methods,
-    #                      apply_thresh, threshold, sigmoid_alpha, img_name_prefix)
 
     # Compute the bounding box from annotation_data1
     bounding_box = compute_bounding_box(annotation_data1, slice_axis)

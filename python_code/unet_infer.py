@@ -10,27 +10,10 @@ import tensorflow as tf
 from keras.models import *
 
 import warnings
-# Step 1: Ignore all warnings
 warnings.filterwarnings("ignore")
 
-# Step 2: Set TensorFlow logging level to suppress warnings and errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress all TF messages, including errors
-
-# Alternatively, using tf.get_logger():
 tf.get_logger().setLevel('ERROR')  # Suppress warnings and errors below ERROR level
-
-# # kidney id
-# sectornum = '427'
-# folderdir = 'D:\\ASU_profwu\\Autoglom\\to Kedar\\to Kedar\\'+sectornum+'\\'
-# # training folder directory
-# trainfolderdir = folderdir+'Train_462\\U-Net Data'
-
-# # testing folder directory
-# testfolderdir = folderdir+'U-Net Data\\'+sectornum
-
-# # save folder directory
-# outputfolderdir = folderdir+sectornum+'_output'
-
 
 
 def resource_path(relative_path):

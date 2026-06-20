@@ -34,22 +34,3 @@ def process_image_batch( input_path, output_path, target_width, target_height):
         # Save the resized image
         cv2.imwrite(output_file_path, resized_img)
 
-# def main():
-#     sectornum = '427'
-#     target_width = 512  # Target width for resizing
-#     target_height = 512  # Target height for resizing
-    
-#     folderdir = 'D:\\ASU_profwu\\Autoglom\\to Kedar\\to Kedar\\'+sectornum+'\\'
-#     size = '256'
-#     sectorsizefolder = sectornum + '_' + size
-    
-#     input_path = os.path.join(folderdir, sectorsizefolder, f"{sectornum}_{size}")
-#     output_path = os.path.join(folderdir, sectorsizefolder, f"{sectornum}_resized_{target_width}x{target_height}")
-    
-#     # Create output directory if it doesn't exist
-#     os.makedirs(output_path, exist_ok=True)
-    
-#     process_image_batch(sectornum, input_path, output_path, target_width, target_height)
-
-# if __name__ == "__main__":
-#     main()

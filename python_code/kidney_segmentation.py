@@ -133,16 +133,3 @@ def main(target_folderdir: str, sector: str, sslice: int, eslice: int, bdot: boo
     print("Created files in:")
     for key in output_dirs:
         print(f"- {paths[key]}")
-
-if __name__ == "__main__":
-    # Example usage
-    SECTOR = "685"
-    TARGET_DIR = "d:/ASU_profwu/"
-    
-    main(
-        target_folderdir=TARGET_DIR,
-        sector=SECTOR,
-        sslice=34,
-        eslice=219,
-        bdot=True  
-    )

@@ -48,7 +48,7 @@ multidict @ file:///C:/b/abs_19e3ubo2ew/croot/multidict_1730905504444/work
 namex==0.0.8
 networkx==2.6.2
 nptyping==2.5.0
-numpy==1.22.4
+numpy
 oauthlib==3.1.1
 opencv-python==4.6.0.66
 opt-einsum @ file:///tmp/build/80754af9/opt_einsum_1621500238896/work

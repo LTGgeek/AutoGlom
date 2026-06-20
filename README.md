@@ -1,122 +1,119 @@
-# AutoGlom Application
-## Overview
-AutoGlom is an advanced software tool for analyzing and processing kidney MRI (Magnetic Resonance Imaging) data. It automates kidney segmentation and glomeruli detection using deep learning techniques with Python-based image processing.
+# AutoGlom
 
-## Features
-- Kidney Boundary Detection
-- Kidney Segmentation
-- U-Net Based Inference
-- U-HDoG Analysis
-- Interactive Viewer
-- Quantitative Analysis
+AutoGlom is a Windows application for kidney MRI processing and glomerular segmentation. It converts NRRD image/annotation volumes into PNG slices, prepares kidney/cortex masks, runs U-Net inference, performs UHDoG glomerular analysis, and reports volume measurements.
 
-## Setup and Installation
-### 1. Anaconda Environment Setup
-1. Install Anaconda or Miniconda
-2. Locate `autoglom_app.yml` in the project repository
-3. Open an Anaconda prompt and navigate to the directory containing `autoglom_app.yml`
-4. Create and activate the environment:
-```bash
-conda env create -f autoglom_app.yml
-conda activate autoglom_app
+## Main Entry Point
+
+Run the source application with:
+
+```powershell
+conda activate kidney
+python autoglom_app1.py
 ```
 
-### 2. Verifying the Installation
-1. Activate the Anaconda environment:
-```bash
-conda activate autoglom_app
-```
-2. Start a Python session:
-```bash
-python
-```
-3. Try importing the required libraries:
-```python
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import cv2
-```
-If these imports work without errors, your environment is correctly configured.
+The GUI starts with a setup window where you select:
 
-## Configuration
-### Updating config.toml
-Modify the `config.toml` file to set appropriate paths:
-```toml
-[paths]
-input_dir = "/path/to/input"
-output_dir = "/path/to/output"
-model_dir = "/path/to/model"
+- Image NRRD file
+- Kidney annotation NRRD file
+- Optional medulla annotation NRRD file
+- Optional artifact/black-dot annotation NRRD file
+- Sector/sample ID
+- Output folder
+- Slice axis
+
+## Packaged Executables
+
+Prebuilt executables are in:
+
+```text
+dist\
 ```
 
-## Running the Application
-1. Activate the environment:
-```bash
-conda activate autoglom_app
-```
-2. Run the application:
-```bash
-python demo.py
-```
+Available builds:
 
-## User Interface and Features
-- Initial Setup Window
-- Kidney Boundary Check Interface
-- Kidney Segmentation Interface
-- U-Net Inference Interface
-- U-HDoG Inference Interface
+- `autoglom_app1.exe`: original GPU-style build from the `kidney` environment.
+- `autoglom_app1_cpu.exe`: CPU-focused build that does not require CUDA/cuDNN installation.
 
-## Operation Flow
-1. Initial Setup
-2. Kidney Boundary Check
-3. Kidney Segmentation
-4. U-Net Inference
-5. U-HDoG Inference
+For most Windows computers, use:
 
-## Image Requirements
-- Size: Square, max 256x256 pixels
-- File Formats: PNG and JPEG
-- Consistency: All images must have the same dimensions
-
-## Troubleshooting
-- Module Not Found: Check Anaconda environment activation and dependencies
-- CUDA Errors: Check NVIDIA GPU compatibility and CUDA installation
-
-## System Requirements
-- Operating System: Windows 10 or later
-- NVIDIA GPU: Required for CUDA support
-- Dependencies: Installed via `autoglom_app.yml`
-
-## Creating an Installer with PyInstaller
-To distribute the application as an executable, use PyInstaller to package `autoglom_app.py` into a standalone application.
-
-### Steps to Create an Installer
-1. Install PyInstaller in your environment:
-```bash
-pip install pyinstaller
+```text
+dist\autoglom_app1_cpu.exe
 ```
 
-2. Navigate to the directory containing `autoglom_app.py`:
-```bash
-cd /path/to/your/project
+The CPU exe uses PyInstaller runtime hook `pyi_runtime_cpu.py` to set CPU mode before TensorFlow starts. This avoids changing the application source code.
+
+## Workflow
+
+1. Open `autoglom_app1.py` or `dist\autoglom_app1_cpu.exe`.
+2. Select the NRRD files and output folder.
+3. Click `Create Directory Structure`.
+4. In the viewer, run `Run Deep Learning Inference`.
+5. Run `Glomerular Analysis`.
+6. Review the image overlays, histogram popup, and saved result files.
+
+## Output Files
+
+For a sector/sample named `1326`, analysis outputs are written under:
+
+```text
+1326_results\
 ```
 
-3. Run the PyInstaller command to create an executable:
-```bash
-pyinstaller --onefile autoglom_app.py
+Important files:
+
+- `results.json`: summary measurements, including kidney volume, medulla volume, glomerular count, mean glomerular volume, and median glomerular volume.
+- `glomerular_volumes.csv`: per-glomerulus volume table.
+- `vs_histogram.png`: histogram of positive glomerular volumes.
+- Numbered PNG files: UHDoG overlay/result slices.
+
+`glomerular_volumes.csv` contains:
+
+```csv
+glom_id,volume_mm3
 ```
 
-4. After the process completes, the standalone executable will be located in the `dist` directory.
+Rows with `volume_mm3 == 0` are skipped.
 
-### Additional Options
-- To prevent a console window from appearing when running the executable:
-```bash
-pyinstaller --onefile --noconsole autoglom_app.py
+## Rebuilding The EXE
+
+### CPU Build
+
+Use this build when distributing to computers that may not have CUDA/cuDNN installed:
+
+```powershell
+conda run -n autoglom_app_cpu pyinstaller --clean --noconfirm autoglom_app1_cpu.spec
 ```
 
-- To include additional files (like configuration files) in the executable:
-```bash
-pyinstaller --onefile --add-data "config.toml;." autoglom_app.py
+Output:
+
+```text
+dist\autoglom_app1_cpu.exe
 ```
 
-Note: Ensure all necessary dependencies and files are available during runtime. You may need to include additional files or folders using the `--add-data` option.
+### Original GPU-Environment Build
+
+```powershell
+conda run -n kidney pyinstaller --clean --noconfirm autoglom_app1.spec
+```
+
+Output:
+
+```text
+dist\autoglom_app1.exe
+```
+
+## Required Model
+
+The U-Net model file must remain in the project folder:
+
+```text
+kidney_427.hdf5
+```
+
+Both PyInstaller spec files include this model in the executable.
+
+## Notes
+
+- The CPU executable is large because it bundles Python, TensorFlow, scientific Python libraries, and the model.
+- The CPU executable may still print TensorFlow CUDA-related messages on some systems, but it is intended to run without installing CUDA or cuDNN.
+- `build/` and `__pycache__/` are generated folders and are not needed for normal use.

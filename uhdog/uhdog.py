@@ -1,7 +1,9 @@
 import os
+import csv
 import numpy as np
 from scipy.ndimage import binary_fill_holes, distance_transform_edt
 from scipy.ndimage import label
+import matplotlib.pyplot as plt
 import json
 from .utils import *
 
@@ -57,6 +59,7 @@ def run_uhdog(config):
     save_dir = os.path.join(folder_path, results_dir)
     # save_path = os.path.join(save_dir, 'results.npz')
     save_json_path = os.path.join(save_dir, 'results.json')
+    glom_volumes_csv_path = os.path.join(save_dir, 'glomerular_volumes.csv')
     
     # Create results directory if it doesn't exist
     os.makedirs(save_dir, exist_ok=True)
@@ -118,9 +121,47 @@ def run_uhdog(config):
     # Calculate volumes for each region in LabelMask
     vs = get_all_vol(kimg, label_mask, perct, x_space, y_space, z_space)
 
+    glom_ids = np.unique(label_mask[label_mask > 0])
+    with open(glom_volumes_csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['glom_id', 'volume_mm3'])
+        for glom_id, volume in zip(glom_ids, vs):
+            if volume > 0:
+                writer.writerow([int(glom_id), float(volume)])
+
     # Calculate mean and median of non-zero volumes
-    mean_vs = np.mean(vs[vs > 0])
-    med_vs = np.median(vs[vs > 0])
+    valid_vs = vs[vs > 0]
+
+    if valid_vs.size > 0:
+        mean_vs = np.mean(valid_vs)
+        med_vs = np.median(valid_vs)
+
+        # Save histogram of glomerular volumes
+        hist_path = os.path.join(save_dir, "vs_histogram.png")
+
+        weights = np.ones_like(valid_vs) * 100 / len(valid_vs)
+
+        plt.figure(figsize=(8, 6))
+        plt.hist(
+             valid_vs,
+             bins=60,
+             range=(0, 1e-3),
+             weights=weights,
+             edgecolor="black"
+             )
+        plt.xlim(0, 1e-3)
+        # plt.axvline(mean_vs, linestyle="--", linewidth=2, label=f"Mean = {mean_vs:.3e}")
+        # plt.axvline(med_vs, linestyle="-", linewidth=2, label=f"Median = {med_vs:.3e}")
+        plt.xlabel("Glomerular volume (mm³)")
+        plt.ylabel("Percentage of total glomeruli (%)")
+        plt.title("Histogram of Glomerular Volumes")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(hist_path, dpi=300)
+        plt.close()
+    else:
+        mean_vs = 0
+        med_vs = 0
 
     _,kid_volume = kidney_volume(kmask, x_space, y_space, z_space)
     _,med_volume = kidney_volume(mmask, x_space, y_space, z_space)
