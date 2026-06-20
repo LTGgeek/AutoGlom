@@ -169,10 +169,20 @@ dist\autoglom_app1.exe
 
 ## Required Model
 
-The U-Net model file must remain in the project folder:
+The U-Net model weight file is required for deep learning inference. Download it from:
+
+[kidney_427.hdf5 model weights](https://drive.google.com/file/d/1pG2F06_JKTzoG9bx8L55w2bsSIORfbSD/view?usp=drive_link)
+
+Save the downloaded file in the project folder with this exact filename:
 
 ```text
 kidney_427.hdf5
+```
+
+Expected location:
+
+```text
+AutoGlom\kidney_427.hdf5
 ```
 
 Both PyInstaller spec files include this model in the executable.
