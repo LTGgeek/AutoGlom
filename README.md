@@ -2,6 +2,67 @@
 
 AutoGlom is a Windows application for kidney MRI processing and glomerular segmentation. It converts NRRD image/annotation volumes into PNG slices, prepares kidney/cortex masks, runs U-Net inference, performs UHDoG glomerular analysis, and reports volume measurements.
 
+## Environment Setup
+
+AutoGlom is developed for Windows 64-bit with Anaconda or Miniconda. The recommended environment for packaging and distribution is the CPU environment because it does not require users to install CUDA or cuDNN.
+
+### Recommended CPU Environment
+
+Open an **Anaconda Prompt**, go to this folder, and run:
+
+```powershell
+setup_autoglom_cpu_env.bat
+```
+
+The script will:
+
+- Create or update the `autoglom_app_cpu` conda environment from `autoglom_cpu.yml`.
+- Install `PyInstaller==5.13.2`.
+- Verify the required packages can be imported.
+
+The CPU environment includes:
+
+- Python 3.9
+- TensorFlow 2.6.0
+- Keras 2.6.0
+- NumPy, SciPy, scikit-image
+- OpenCV
+- Pillow
+- matplotlib
+- pynrrd
+- PyInstaller
+
+Manual setup commands:
+
+```powershell
+conda env create -f autoglom_cpu.yml
+conda run -n autoglom_app_cpu python -m pip install pyinstaller==5.13.2
+conda run -n autoglom_app_cpu python -c "import tensorflow, keras, numpy, scipy, skimage, cv2, nrrd, PyInstaller; print('cpu build environment ok')"
+```
+
+If `autoglom_app_cpu` already exists, update it instead:
+
+```powershell
+conda env update -n autoglom_app_cpu -f autoglom_cpu.yml --prune
+```
+
+### Original GPU/Development Environment
+
+The original source workflow uses the `kidney` conda environment on this workstation:
+
+```powershell
+conda activate kidney
+python autoglom_app1.py
+```
+
+For a reproducible GPU-style environment, use:
+
+```powershell
+conda env create -f autoglom_app_python.yml
+```
+
+This GPU-style environment includes CUDA/cuDNN dependencies. It is useful for the original GPU build, but it is less portable than the CPU executable.
+
 ## Main Entry Point
 
 Run the source application with:
@@ -10,6 +71,8 @@ Run the source application with:
 conda activate kidney
 python autoglom_app1.py
 ```
+
+If you created the GPU-style environment from `autoglom_app_python.yml`, activate `autoglom_app` instead of `kidney`.
 
 The GUI starts with a setup window where you select:
 
@@ -89,6 +152,8 @@ Output:
 ```text
 dist\autoglom_app1_cpu.exe
 ```
+
+The CPU package uses `pyi_runtime_cpu.py` through `autoglom_app1_cpu.spec` to request CPU execution before TensorFlow starts.
 
 ### Original GPU-Environment Build
 
