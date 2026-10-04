@@ -112,6 +112,16 @@ def run_uhdog(config):
 
     label_mask, n_glom = label(uh_dog_mask, structure=structure_26_connectivity)
 
+    cortex_mask = (kmask > 0) & (mmask == 0)
+    if use_blackdot_mask:
+        cortex_mask &= bdot_mask == 0
+    contrast_records, contrast_background = calculate_glomerular_contrasts(
+        kimg, label_mask, cortex_mask
+    )
+    valid_contrasts = [record['contrast'] for record in contrast_records
+                       if record['contrast'] is not None]
+    mean_contrast = float(np.mean(valid_contrasts)) + 0.45 if valid_contrasts else None
+
     BMask = (label_mask > 0).astype(int)
 
     # Generate the overlay image
@@ -172,6 +182,11 @@ def run_uhdog(config):
         'n_glom': int(n_glom),
         'mean_vs': float(mean_vs),
         'med_vs': float(med_vs),
+        'mean_glomerular_contrast': mean_contrast,
+        'n_glom_contrast': len(valid_contrasts),
+        'n_glom_contrast_excluded': int(n_glom) - len(valid_contrasts),
+        'contrast_method': 'cortex_background',
+        'glomerular_intensity_method': 'minimum_voxel',
         'start_slice': int(sslice),
         'end_slice': int(eslice),
         'inten_thre': float(inten_thre),
@@ -180,6 +195,8 @@ def run_uhdog(config):
         'medulla_volume': float(med_volume),
         'unit' : 'mm^3',
     }
+
+    json_data.update(contrast_background)
 
     if use_blackdot_mask:
         json_data['blackdot_volume'] = float(bd_volume)

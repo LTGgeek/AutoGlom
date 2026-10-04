@@ -426,6 +426,8 @@ def display_json_results(data, frame):
     frame.grid(row=3, column=0, columnspan=3, pady=10)
 
     # Create a formatted string with the results
+    mean_contrast = data.get('mean_glomerular_contrast')
+    contrast_text = f"{mean_contrast:.4f}" if mean_contrast is not None else "N/A"
     result_text = f"""
         Results:
         Kidney Volume:        {data['kidney_volume']:.4f} mm³
@@ -433,8 +435,9 @@ def display_json_results(data, frame):
         Number of Glomeruli:  {data['n_glom']}
         Mean Glomerular  Vol.:  {data['mean_vs']:.3e} mm³
         Median Glomerular  Vol.:{data['med_vs']:.3e} mm³
+        Glomerular Contrast:  {contrast_text}
         Magnitude Threshold:  {data['inten_thre']:.2f}
-        """# Glomerular Contrast: 4.02
+        """
     if bdot_file:
         result_text = f"""
         Results:
@@ -444,8 +447,9 @@ def display_json_results(data, frame):
             Number of Glomeruli:  {data['n_glom']}
             Mean Glomerular  Vol.:  {data['mean_vs']:.3e} mm³
             Median Glomerular  Vol.:{data['med_vs']:.3e} mm³
+            Glomerular Contrast:  {contrast_text}
             Magnitude Threshold:  {data['inten_thre']:.2f}
-            """#Glomerular Contrast: 4.02
+            """
 
     # Create a label with the formatted text
     result_label = tk.Label(frame, text=result_text, justify=tk.LEFT, font=("Arial", 10))

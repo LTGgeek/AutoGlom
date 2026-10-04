@@ -124,7 +124,7 @@ For a sector/sample named `1326`, analysis outputs are written under:
 
 Important files:
 
-- `results.json`: summary measurements, including kidney volume, medulla volume, glomerular count, mean glomerular volume, and median glomerular volume.
+- `results.json`: summary measurements, including kidney volume, medulla volume, glomerular count, mean glomerular volume, median glomerular volume, and mean glomerular contrast with its cortex background measurements and contributing/excluded counts.
 - `glomerular_volumes.csv`: per-glomerulus volume table.
 - `vs_histogram.png`: histogram of positive glomerular volumes.
 - Numbered PNG files: UHDoG overlay/result slices.
@@ -136,6 +136,19 @@ glom_id,volume_mm3
 ```
 
 Rows with `volume_mm3 == 0` are skipped.
+
+### Glomerular Contrast
+
+After final segmentation, contrast is calculated for every detected glomerulus, independently of its estimated volume. Each glomerulus is represented by the smallest finite intensity among its voxels.
+
+
+```text
+contrast = (neighbor_mean_intensity - minimum_glom_intensity) / minimum_glom_intensity
+glomerular_contrast = average(valid per-glomerulus contrasts)
+```
+
+
+`results.json` records `contrast_method` (`cortex_background`), `glomerular_intensity_method` (`minimum_voxel`), `mean_glomerular_intensity`, `glomerular_intensity_voxel_count`, `mean_cortex_background_intensity`, and `cortex_background_voxel_count`. Contributing/excluded glomerulus counts are also saved but are not shown in the results panel.
 
 ## Rebuilding The EXE
 

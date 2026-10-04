@@ -3,7 +3,7 @@ import numpy as np
 from skimage.io import imread
 from skimage import img_as_float
 from scipy.ndimage import convolve
-from scipy.ndimage import label
+from scipy.ndimage import label, find_objects
 from skimage.transform import resize
 from scipy.io import loadmat
 from PIL import Image
@@ -552,6 +552,91 @@ def get_all_vol(kimg, m, perct, x_space, y_space, z_space):
         rs[i] = get_volume(samp, 1 - perct, x_space, y_space, z_space)
 
     return rs
+
+def calculate_cortex_background(kimg, label_mask, cortex_mask):
+    """Measure brighter non-glomerular cortex against all glomerular voxels."""
+    if (kimg.ndim != 3 or label_mask.shape != kimg.shape
+            or cortex_mask.shape != kimg.shape):
+        raise ValueError("Intensity image, label mask, and cortex mask must have matching 3D shapes.")
+
+    glom_intensities = kimg[label_mask > 0]
+    glom_intensities = glom_intensities[np.isfinite(glom_intensities)]
+    mean_glom_intensity = (float(np.mean(glom_intensities, dtype=np.float64))
+                           if glom_intensities.size else None)
+    background_count = 0
+    background_mean = None
+    if mean_glom_intensity is not None:
+        background_intensities = kimg[(cortex_mask > 0) & (label_mask == 0)]
+        background_intensities = background_intensities[
+            np.isfinite(background_intensities) & (background_intensities > mean_glom_intensity)
+        ]
+        background_count = int(background_intensities.size)
+        if background_count:
+            background_mean = float(np.mean(background_intensities, dtype=np.float64))
+
+    return {
+        'mean_glomerular_intensity': mean_glom_intensity,
+        'glomerular_intensity_voxel_count': int(glom_intensities.size),
+        'mean_cortex_background_intensity': background_mean,
+        'cortex_background_voxel_count': background_count,
+    }
+
+
+def calculate_glomerular_contrasts(kimg, label_mask, cortex_mask):
+    """Compare each label's minimum-intensity voxel with shared cortex background.
+
+    Return per-glomerulus records and the cortex background measurements.
+    Undefined contrasts are recorded as None and excluded from the mean.
+    """
+    background = calculate_cortex_background(kimg, label_mask, cortex_mask)
+    background_mean = background['mean_cortex_background_intensity']
+
+    records = []
+    for glom_id, bounds in enumerate(find_objects(label_mask), start=1):
+        if bounds is None:
+            continue
+
+        # Search each small bounding box instead of the entire kidney per label.
+        region = label_mask[bounds] == glom_id
+        indices = np.flatnonzero(region)
+        intensities = kimg[bounds].ravel()[indices]
+        finite_indices = np.flatnonzero(np.isfinite(intensities))
+        minimum_index = (finite_indices[np.argmin(intensities[finite_indices])]
+                         if finite_indices.size else 0)
+        minimum = np.unravel_index(indices[minimum_index], region.shape)
+        location = tuple(int(axis.start + index) for axis, index in zip(bounds, minimum))
+        glom_intensity = float(intensities[minimum_index])
+        contrast = None
+        if not np.isfinite(glom_intensity):
+            status = 'nonfinite_intensity'
+        elif glom_intensity == 0:
+            status = 'zero_intensity'
+        elif background_mean is None:
+            status = 'no_eligible_cortex_voxels'
+        elif not np.isfinite(background_mean):
+            status = 'nonfinite_intensity'
+        else:
+            value = (background_mean - glom_intensity) / glom_intensity
+            if np.isfinite(value):
+                contrast = float(value)
+                status = 'ok'
+            else:
+                status = 'nonfinite_contrast'
+
+        records.append({
+            'glom_id': glom_id,
+            'row': location[0],
+            'column': location[1],
+            'slice': location[2],
+            'glom_intensity': glom_intensity,
+            'background_voxel_count': background['cortex_background_voxel_count'],
+            'background_mean_intensity': background_mean,
+            'contrast': contrast,
+            'status': status,
+        })
+
+    return records, background
+
 
 def kidney_volume(IMG, x_value, y_value, z_value):
     """
