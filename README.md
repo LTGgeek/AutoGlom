@@ -144,11 +144,13 @@ After final segmentation, contrast is calculated for every detected glomerulus, 
 
 ```text
 contrast = (neighbor_mean_intensity - minimum_glom_intensity) / minimum_glom_intensity
-glomerular_contrast = average(valid per-glomerulus contrasts)
+glomerular_contrast = average(valid per-glomerulus contrasts) + 0.45
 ```
 
 
-`results.json` records `contrast_method` (`cortex_background`), `glomerular_intensity_method` (`minimum_voxel`), `mean_glomerular_intensity`, `glomerular_intensity_voxel_count`, `mean_cortex_background_intensity`, and `cortex_background_voxel_count`. Contributing/excluded glomerulus counts are also saved but are not shown in the results panel.
+`results.json` stores the final Glomerular Contrast as `glomerular_contrast`, including the `+0.45` adjustment applied once during analysis. This is the value shown in the results panel. The existing `mean_glomerular_contrast` field is retained with the same value for compatibility. If no valid contrasts are available, both fields are `null` and the panel shows `N/A`.
+
+`results.json` also records `contrast_method` (`cortex_background`), `glomerular_intensity_method` (`minimum_voxel`), `mean_glomerular_intensity`, `glomerular_intensity_voxel_count`, `mean_cortex_background_intensity`, and `cortex_background_voxel_count`. Contributing/excluded glomerulus counts are also saved but are not shown in the results panel.
 
 ## Rebuilding The EXE
 

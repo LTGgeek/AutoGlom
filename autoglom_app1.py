@@ -426,7 +426,7 @@ def display_json_results(data, frame):
     frame.grid(row=3, column=0, columnspan=3, pady=10)
 
     # Create a formatted string with the results
-    mean_contrast = data.get('mean_glomerular_contrast')
+    mean_contrast = data.get('glomerular_contrast', data.get('mean_glomerular_contrast'))
     contrast_text = f"{mean_contrast:.4f}" if mean_contrast is not None else "N/A"
     result_text = f"""
         Results:

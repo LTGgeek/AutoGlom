@@ -182,6 +182,7 @@ def run_uhdog(config):
         'n_glom': int(n_glom),
         'mean_vs': float(mean_vs),
         'med_vs': float(med_vs),
+        'glomerular_contrast': mean_contrast,
         'mean_glomerular_contrast': mean_contrast,
         'n_glom_contrast': len(valid_contrasts),
         'n_glom_contrast_excluded': int(n_glom) - len(valid_contrasts),

@@ -337,6 +337,8 @@ class ContrastOutputTests(unittest.TestCase):
         results_dir = os.path.join(folder, 'test_results')
         with open(os.path.join(results_dir, 'results.json')) as f:
             results = json.load(f)
+        self.assertIn('glomerular_contrast', results)
+        self.assertEqual(results['glomerular_contrast'], results['mean_glomerular_contrast'])
         self.assertFalse(os.path.exists(os.path.join(results_dir, 'glomerular_contrasts.csv')))
         with open(os.path.join(results_dir, 'glomerular_volumes.csv'), newline='') as f:
             volume_rows = list(csv.DictReader(f))
@@ -348,6 +350,7 @@ class ContrastOutputTests(unittest.TestCase):
             self.assertEqual(results['n_glom'], 3)
             self.assertEqual(results['n_glom_contrast'], 2)
             self.assertEqual(results['n_glom_contrast_excluded'], 1)
+            self.assertAlmostEqual(results['glomerular_contrast'], 1.95)
             self.assertAlmostEqual(results['mean_glomerular_contrast'], 1.95)
             self.assertEqual(results['contrast_method'], 'cortex_background')
             self.assertEqual(results['glomerular_intensity_method'], 'minimum_voxel')
